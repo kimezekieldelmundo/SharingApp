@@ -17,6 +17,11 @@ public class EditContactActivity  extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_edit_contact);
+        username = (EditText) findViewById(R.id.username);
+        email = (EditText) findViewById(R.id.email);
+        context = getApplicationContext();
+        contact_list.loadContacts(context);
     }
 
     public void saveContact(View view){

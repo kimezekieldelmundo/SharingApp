@@ -130,7 +130,7 @@ public class EditItemActivity extends AppCompatActivity {
         String width_str = width.getText().toString();
         String height_str = height.getText().toString();
 //        String borrower_str = borrower.getText().toString();
-        Contact borrowerObj = contact_list.getContactByUsername(borrower.getText().toString());
+//        Contact borrowerObj = contact_list.getContactByUsername(borrower.getText().toString());
         Dimensions dimensions = new Dimensions(length_str, width_str, height_str);
 
         if (title_str.equals("")) {
@@ -163,10 +163,10 @@ public class EditItemActivity extends AppCompatActivity {
             return;
         }
 
-        if (borrowerObj.equals(null) && !status.isChecked()) {
-            borrower.setError("Empty field!");
-            return;
-        }
+//        if (borrowerObj.equals(null) && !status.isChecked()) {
+//            borrower.setError("Empty field!");
+//            return;
+//        }
 
         // Reuse the item id
         String id = item.getId();
@@ -177,7 +177,7 @@ public class EditItemActivity extends AppCompatActivity {
         boolean checked = status.isChecked();
         if (!checked) {
             updated_item.setStatus("Borrowed");
-            updated_item.setBorrower(borrowerObj);
+//            updated_item.setBorrower(borrowerObj);
         }
         item_list.addItem(updated_item);
 

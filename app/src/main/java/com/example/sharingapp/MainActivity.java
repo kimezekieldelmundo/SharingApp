@@ -8,6 +8,7 @@ import android.support.v7.widget.Toolbar;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -39,5 +40,12 @@ public class MainActivity extends AppCompatActivity {
     public void addItemActivity(View view) {
         Intent intent = new Intent(this, AddItemActivity.class);
         startActivity(intent);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.vertical_elipsis, menu);
+        return true;
     }
 }

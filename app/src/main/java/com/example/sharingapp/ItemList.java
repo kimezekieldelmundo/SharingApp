@@ -74,6 +74,8 @@ public class ItemList {
             items = new ArrayList<Item>();
         } catch (IOException e) {
             items = new ArrayList<Item>();
+        }catch (Exception e){
+            items = new ArrayList<Item>();
         }
     }
 
