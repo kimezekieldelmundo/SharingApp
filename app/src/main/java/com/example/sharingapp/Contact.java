@@ -8,7 +8,9 @@ public class Contact {
     private String id;
 
     public Contact(String username, String email){
-
+        this.username = username;
+        this.email = email;
+        setId();
     }
 
     public String getUsername() {

@@ -35,7 +35,7 @@ public class ContactList {
     }
 
     public ArrayList<String> getAllUsernames() {
-        ArrayList<String> usernames = new ArrayList<>();
+        ArrayList<String> usernames = new ArrayList<String>();
         for (Contact i: contacts){
             usernames.add(i.getUsername());
         }
@@ -43,7 +43,9 @@ public class ContactList {
     }
 
     public void addContact(Contact contact) {
-        contacts.add(contact);
+        if( isUsernameAvailable(contact.getUsername()) ){
+            contacts.add(contact);
+        }
     }
 
     public void deleteContact(Contact contact) {
@@ -92,7 +94,7 @@ public class ContactList {
             FileInputStream fis = context.openFileInput(FILENAME);
             InputStreamReader isr = new InputStreamReader(fis);
             Gson gson = new Gson();
-            Type listType = new TypeToken<ArrayList<Item>>() {}.getType();
+            Type listType = new TypeToken<ArrayList<Contact>>() {}.getType();
             contacts = gson.fromJson(isr, listType); // temporary
             fis.close();
         } catch (FileNotFoundException e) {
@@ -118,7 +120,7 @@ public class ContactList {
     }
 
     public boolean isUsernameAvailable(String username){
-        if(getContactByUsername(username) != null){
+        if(getContactByUsername(username) == null){
             return true;
         }else{
             return false;

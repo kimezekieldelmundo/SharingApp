@@ -20,7 +20,7 @@ public class ContactAdapter extends ArrayAdapter<Contact> {
     private LayoutInflater inflater;
     private Context context;
 
-    public ContactAdapter(Context context, ArrayList<Contact> items, Fragment fragment) {
+    public ContactAdapter(Context context, ArrayList<Contact> items) {
         super(context, 0, items);
         this.context = context;
         this.inflater = LayoutInflater.from(context);
@@ -35,19 +35,19 @@ public class ContactAdapter extends ArrayAdapter<Contact> {
         // The "Item" in the method name is a coincidence...
         Contact contact = getItem(position);
 
-        String username = "Title: " + contact.getUsername();
-        String email = "Description: " + contact.getEmail();
+        String username = "Username: " + contact.getUsername();
+        String email = "Email: " + contact.getEmail();
 
         // Check if an existing view is being reused, otherwise inflate the view.
         if (convertView == null) {
-            convertView = inflater.from(context).inflate(R.layout.itemlist_item, parent, false);
+            convertView = inflater.from(context).inflate(R.layout.contactlist_contact, parent, false);
         }
 
-        TextView title_tv = (TextView) convertView.findViewById(R.id.title_tv);
-        TextView description_tv = (TextView) convertView.findViewById(R.id.description_tv);
+        TextView username_tv = (TextView) convertView.findViewById(R.id.username_tv);
+        TextView email_tv = (TextView) convertView.findViewById(R.id.email_tv);
 
-        title_tv.setText(username);
-        description_tv.setText(email);
+        username_tv.setText(username);
+        email_tv.setText(email);
 
         return convertView;
     }

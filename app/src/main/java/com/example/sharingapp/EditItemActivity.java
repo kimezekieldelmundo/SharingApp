@@ -7,11 +7,15 @@ import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Editing a pre-existing item consists of deleting the old item and adding a new item with the old
@@ -38,25 +42,33 @@ public class EditItemActivity extends AppCompatActivity {
     private Switch status;
     private Spinner borrower_spinner;
     private EditText invisible;
-    private ContactList contact_list;
+    private ContactList contact_list = new ContactList();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_item);
+        context = getApplicationContext();
 
+        contact_list.loadContacts(context);
         title = (EditText) findViewById(R.id.title);
         maker = (EditText) findViewById(R.id.maker);
         description = (EditText) findViewById(R.id.description);
         length = (EditText) findViewById(R.id.length);
         width = (EditText) findViewById(R.id.width);
         height = (EditText) findViewById(R.id.height);
-        borrower = (EditText) findViewById(R.id.borrower);
+//        borrower = (EditText) findViewById(R.id.borrower);
+
+        borrower_spinner = (Spinner) findViewById(R.id.borrower_spinner);
+        ArrayList<String> sample = new ArrayList<String>(Arrays.asList(new String[]{"1", "2"}));
+        ArrayAdapter<String> borrowerSprinnerArrayAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, contact_list.getAllUsernames());
+        borrowerSprinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        borrower_spinner.setAdapter(borrowerSprinnerArrayAdapter);
+
         borrower_tv = (TextView) findViewById(R.id.borrower_tv);
         photo = (ImageView) findViewById(R.id.image_view);
         status = (Switch) findViewById(R.id.available_switch);
 
-        context = getApplicationContext();
         item_list.loadItems(context);
 
         Intent intent = getIntent(); // Get intent from ItemsFragment
@@ -77,10 +89,10 @@ public class EditItemActivity extends AppCompatActivity {
         String status_str = item.getStatus();
         if (status_str.equals("Borrowed")) {
             status.setChecked(false);
-            borrower.setText(item.getBorrower().getUsername());
+//            borrower.setText(item.getBorrower().getUsername());
         } else {
             borrower_tv.setVisibility(View.GONE);
-            borrower.setVisibility(View.GONE);
+            borrower_spinner.setVisibility(View.GONE);
         }
 
         image = item.getImage();
@@ -195,14 +207,14 @@ public class EditItemActivity extends AppCompatActivity {
     public void toggleSwitch(View view){
         if (status.isChecked()) {
             // Means was previously borrowed
-            borrower.setVisibility(View.GONE);
+            borrower_spinner.setVisibility(View.GONE);
             borrower_tv.setVisibility(View.GONE);
             item.setBorrower(null);
             item.setStatus("Available");
 
         } else {
             // Means was previously available
-            borrower.setVisibility(View.VISIBLE);
+            borrower_spinner.setVisibility(View.VISIBLE);
             borrower_tv.setVisibility(View.VISIBLE);
         }
     }

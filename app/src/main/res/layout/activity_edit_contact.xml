@@ -7,7 +7,7 @@
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
     android:paddingTop="16dp"
-    tools:context="com.example.sharingapp.EditItemActivity"
+    tools:context="com.example.sharingapp.EditContactActivity"
     android:orientation="vertical">
 
     <LinearLayout
@@ -74,8 +74,18 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.25"
-            android:onClick="saveItem"
+            android:onClick="saveContact"
             android:text="@string/save"
+            android:layout_gravity="center_horizontal"
+            android:textAppearance="@android:style/TextAppearance.Medium"/>
+
+        <Button
+            android:id="@+id/delete_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.25"
+            android:onClick="deleteContact"
+            android:text="@string/delete"
             android:layout_gravity="center_horizontal"
             android:textAppearance="@android:style/TextAppearance.Medium"/>
 
