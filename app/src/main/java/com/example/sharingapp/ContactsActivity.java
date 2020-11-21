@@ -28,14 +28,15 @@ public class ContactsActivity  extends AppCompatActivity {
         my_contacts = (ListView)  findViewById(R.id.contacts_list_view);
         adapter = new ContactAdapter(this, contact_list.getContacts());
         my_contacts.setAdapter(adapter);
-        my_contacts.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        my_contacts.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Contact selectedContact = (Contact)  adapterView.getItemAtPosition(i);
                 Intent intent = new Intent(context, EditContactActivity.class);
                 intent.putExtra("contact", contact_list.getIndex(selectedContact));
                 intent.addFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
                 startActivity(intent);
+                return true;
             }
         });
 
