@@ -6,7 +6,10 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+
+import java.util.ArrayList;
 
 public class EditContactActivity  extends AppCompatActivity {
     private EditText username;
@@ -23,12 +26,30 @@ public class EditContactActivity  extends AppCompatActivity {
         email = (EditText) findViewById(R.id.email);
         context = getApplicationContext();
         contact_list.loadContacts(context);
+        Button delete_button = (Button) findViewById(R.id.delete_button);
+        Button save_button = (Button) findViewById(R.id.save_button);
 
         Intent intent = getIntent();
         int pos = intent.getIntExtra("contact",0);
         contact = contact_list.getContact(pos);
+        ItemList itemList = new ItemList();
+        itemList.loadItems(context);
+        ArrayList<Contact> borrowerContacts = itemList.getActiveBorrowers();
+        boolean canEdit = true;
+        for(Contact i: borrowerContacts){
+            if(i.getId().equals(contact.getId())){
+                canEdit = false;
+                break;
+            }
+        }
         username.setText(contact.getUsername());
         email.setText(contact.getEmail());
+        if (!canEdit){
+            username.setEnabled(false);
+            email.setEnabled(false);
+            delete_button.setEnabled(false);
+            save_button.setEnabled(false);
+        }
     }
 
     public void saveContact(View view){

@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()){
             case R.id.vertical_elipsis:
                 Intent intent = new Intent(this, ContactsActivity.class);
-                intent.addFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
+//                intent.addFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
                 startActivity(intent);
                 return true;
             default:

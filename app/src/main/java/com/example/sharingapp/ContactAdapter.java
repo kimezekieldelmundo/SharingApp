@@ -48,7 +48,7 @@ public class ContactAdapter extends ArrayAdapter<Contact> {
 
         username_tv.setText(username);
         email_tv.setText(email);
-
+//        check if contact is a borrower
         return convertView;
     }
 }
