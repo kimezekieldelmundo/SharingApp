@@ -7,6 +7,7 @@ import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -37,7 +38,6 @@ public class EditItemActivity extends AppCompatActivity {
     private EditText length;
     private EditText width;
     private EditText height;
-    private EditText borrower;
     private TextView  borrower_tv;
     private Switch status;
     private Spinner borrower_spinner;
@@ -49,53 +49,65 @@ public class EditItemActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_item);
         context = getApplicationContext();
+//        data loading
+        Intent intent = getIntent(); // Get intent from ItemsFragment
+        int pos = intent.getIntExtra("position", 0);
+        item_list.loadItems(context);
+        item = item_list.getItem(pos);
+        Dimensions dimensions = item.getDimensions();
+        String status_str = item.getStatus();
+        image = item.getImage();
 
         contact_list.loadContacts(context);
+        Contact borrowerContact = item.getBorrower();
+
+//      form fields
         title = (EditText) findViewById(R.id.title);
         maker = (EditText) findViewById(R.id.maker);
         description = (EditText) findViewById(R.id.description);
         length = (EditText) findViewById(R.id.length);
         width = (EditText) findViewById(R.id.width);
         height = (EditText) findViewById(R.id.height);
-//        borrower = (EditText) findViewById(R.id.borrower);
-
-        borrower_spinner = (Spinner) findViewById(R.id.borrower_spinner);
-        ArrayList<String> sample = new ArrayList<String>(Arrays.asList(new String[]{"1", "2"}));
-        ArrayAdapter<String> borrowerSprinnerArrayAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, contact_list.getAllUsernames());
-        borrowerSprinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        borrower_spinner.setAdapter(borrowerSprinnerArrayAdapter);
-
         borrower_tv = (TextView) findViewById(R.id.borrower_tv);
         photo = (ImageView) findViewById(R.id.image_view);
         status = (Switch) findViewById(R.id.available_switch);
 
-        item_list.loadItems(context);
+        borrower_spinner = (Spinner) findViewById(R.id.borrower_spinner);
+        ArrayAdapter<String> borrowerSprinnerArrayAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, contact_list.getAllUsernames());
+        borrowerSprinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        borrower_spinner.setAdapter(borrowerSprinnerArrayAdapter);
+        borrower_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String selected = (String)adapterView.getItemAtPosition(i);
+                Contact contact = contact_list.getContactByUsername(selected);
+                item.setBorrower(contact);
+            }
 
-        Intent intent = getIntent(); // Get intent from ItemsFragment
-        int pos = intent.getIntExtra("position", 0);
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
 
-        item = item_list.getItem(pos);
+            }
+        });
 
+//      set form fields value
         title.setText(item.getTitle());
         maker.setText(item.getMaker());
         description.setText(item.getDescription());
-
-        Dimensions dimensions = item.getDimensions();
-
         length.setText(dimensions.getLength());
         width.setText(dimensions.getWidth());
         height.setText(dimensions.getHeight());
 
-        String status_str = item.getStatus();
         if (status_str.equals("Borrowed")) {
             status.setChecked(false);
-//            borrower.setText(item.getBorrower().getUsername());
+            if (borrowerContact != null){
+                borrower_spinner.setSelection(borrowerSprinnerArrayAdapter.getPosition(borrowerContact.getUsername()));
+            }
         } else {
             borrower_tv.setVisibility(View.GONE);
             borrower_spinner.setVisibility(View.GONE);
         }
 
-        image = item.getImage();
         if (image != null) {
             photo.setImageBitmap(image);
         } else {
@@ -142,7 +154,7 @@ public class EditItemActivity extends AppCompatActivity {
         String width_str = width.getText().toString();
         String height_str = height.getText().toString();
 //        String borrower_str = borrower.getText().toString();
-//        Contact borrowerObj = contact_list.getContactByUsername(borrower.getText().toString());
+        Contact borrowerObj = contact_list.getContactByUsername((String) borrower_spinner.getSelectedItem());
         Dimensions dimensions = new Dimensions(length_str, width_str, height_str);
 
         if (title_str.equals("")) {
@@ -189,7 +201,7 @@ public class EditItemActivity extends AppCompatActivity {
         boolean checked = status.isChecked();
         if (!checked) {
             updated_item.setStatus("Borrowed");
-//            updated_item.setBorrower(borrowerObj);
+            updated_item.setBorrower(borrowerObj);
         }
         item_list.addItem(updated_item);
 
