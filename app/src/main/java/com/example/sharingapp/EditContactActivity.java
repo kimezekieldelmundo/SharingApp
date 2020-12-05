@@ -2,96 +2,91 @@ package com.example.sharingapp;
 
 import android.content.Context;
 import android.content.Intent;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
+import android.view.SurfaceControl;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 
-import java.util.ArrayList;
+/**
+ * Editing a pre-existing contact consists of deleting the old contact and adding a new contact with the old
+ * contact's id.
+ * Note: You will not be able contacts which are "active" borrowers
+ */
+public class EditContactActivity extends AppCompatActivity {
 
-public class EditContactActivity  extends AppCompatActivity {
-    private EditText username;
-    private EditText email;
     private ContactList contact_list = new ContactList();
     private Contact contact;
+    private EditText email;
+    private EditText username;
     private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_contact);
-        username = (EditText) findViewById(R.id.username);
-        email = (EditText) findViewById(R.id.email);
+
         context = getApplicationContext();
         contact_list.loadContacts(context);
-        Button delete_button = (Button) findViewById(R.id.delete_button);
-        Button save_button = (Button) findViewById(R.id.save_button);
 
         Intent intent = getIntent();
-        int pos = intent.getIntExtra("contact",0);
+        int pos = intent.getIntExtra("position", 0);
+
         contact = contact_list.getContact(pos);
-        ItemList itemList = new ItemList();
-        itemList.loadItems(context);
-        ArrayList<Contact> borrowerContacts = itemList.getActiveBorrowers();
-        boolean canEdit = true;
-        for(Contact i: borrowerContacts){
-            if(i.getId().equals(contact.getId())){
-                canEdit = false;
-                break;
-            }
-        }
+
+        username = (EditText) findViewById(R.id.username);
+        email = (EditText) findViewById(R.id.email);
+
         username.setText(contact.getUsername());
         email.setText(contact.getEmail());
-        if (!canEdit){
-            username.setEnabled(false);
-            email.setEnabled(false);
-            delete_button.setEnabled(false);
-            save_button.setEnabled(false);
-        }
     }
 
-    public void saveContact(View view){
-        String username_str = username.getText().toString();
+    public void saveContact(View view) {
+
         String email_str = email.getText().toString();
-        String id = contact.getId();
-        if (username_str.equals("")){
-            username.setError("Empty username");
+
+        if (email_str.equals("")) {
+            email.setError("Empty field!");
             return;
         }
 
-        if(
-                !contact.getUsername().equals(username_str) /*username changed*/
-                &&
-                !contact_list.isUsernameAvailable(username_str) /*username unavailable*/
-        ){
-            username.setError("Username already taken");
+        if (!email_str.contains("@")){
+            email.setError("Must be an email address!");
             return;
         }
 
-        if (email_str.equals("")){
-            email.setError("Empty email");
+        String username_str = username.getText().toString();
+        String id = contact.getId(); // Reuse the contact id
+
+        // Check that username is unique AND username is changed (Note: if username was not changed
+        // then this should be fine, because it was already unique.)
+        if (!contact_list.isUsernameAvailable(username_str) && !(contact.getUsername().equals(username_str))) {
+            username.setError("Username already taken!");
             return;
         }
-        // delete old contact
-        contact_list.deleteContact(contact);
 
-        // add new contact with same id but updated username and email
-        Contact newContact = new Contact(username_str, email_str);
-        newContact.updateId(id);
-        contact_list.addContact(newContact);
-        contact_list.saveContacts(context);
-        Intent intent = new Intent(this, ContactsActivity.class);
-        intent.addFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
-        startActivity(intent);
+        Contact updated_contact = new Contact(username_str, email_str, id);
+
+        EditContactCommand editContactCommand = new EditContactCommand(contact_list, contact, updated_contact, context);
+        editContactCommand.execute();
+        boolean success = editContactCommand.isExecuted();
+        if(!success){
+            return;
+        }
+        // End EditContactActivity
+        finish();
     }
-    public void deleteContact(View view){
-        contact_list.deleteContact(contact);
-        contact_list.saveContacts(context);
-        Intent intent = new Intent(this, ContactsActivity.class);
-        intent.addFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
-        startActivity(intent);
+
+    public void deleteContact(View view) {
+
+        DeleteContactCommand deleteContactCommand = new DeleteContactCommand(contact_list, contact, context);
+        deleteContactCommand.execute();
+        boolean success = deleteContactCommand.isExecuted();
+        if(!success){
+            return;
+        }
+
+        // End EditContactActivity
+        finish();
     }
 }
-

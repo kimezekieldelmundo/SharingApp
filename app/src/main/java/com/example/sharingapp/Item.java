@@ -22,11 +22,12 @@ public class Item {
     protected String image_base64;
     private String id;
 
-    public Item(String title, String maker, String description, Dimensions dimensions, Bitmap image, String id) {
+    public Item(String title, String maker, String description, Bitmap image,
+                String id ) {
         this.title = title;
         this.maker = maker;
         this.description = description;
-        this.dimensions = dimensions;
+        this.dimensions = null;
         this.status = "Available";
         this.borrower = null;
         addImage(image);
@@ -74,12 +75,20 @@ public class Item {
         return description;
     }
 
-    public void setDimensions(Dimensions dimensions) {
-        this.dimensions = dimensions;
+    public void setDimensions(String length, String width, String height) {
+        this.dimensions = new Dimensions(length, width, height);
     }
 
-    public Dimensions getDimensions() {
-        return dimensions;
+    public String getLength(){
+        return dimensions.getLength();
+    }
+
+    public String getWidth(){
+        return dimensions.getWidth();
+    }
+
+    public String getHeight(){
+        return dimensions.getHeight();
     }
 
     public void setStatus(String status) {
@@ -103,6 +112,7 @@ public class Item {
             image = new_image;
             ByteArrayOutputStream byteArrayBitmapStream = new ByteArrayOutputStream();
             new_image.compress(Bitmap.CompressFormat.PNG, 100, byteArrayBitmapStream);
+
             byte[] b = byteArrayBitmapStream.toByteArray();
             image_base64 = Base64.encodeToString(b, Base64.DEFAULT);
         }
@@ -116,4 +126,3 @@ public class Item {
         return image;
     }
 }
-

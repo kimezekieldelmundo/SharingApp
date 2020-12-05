@@ -21,15 +21,15 @@
             android:id="@+id/username_tv"
             android:layout_width="104dp"
             android:layout_height="wrap_content"
-            android:text="@string/username_hint"
             android:gravity="center_vertical"
+            android:text="@string/username_hint"
             android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <EditText
             android:id="@+id/username"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/username_hint"
+            android:hint="@string/title_hint"
             android:inputType="text"
             android:textAppearance="@android:style/TextAppearance.Medium"
             android:maxLength="24"/>
@@ -47,8 +47,8 @@
             android:id="@+id/email_tv"
             android:layout_width="104dp"
             android:layout_height="wrap_content"
-            android:text="@string/email_hint"
             android:gravity="center_vertical"
+            android:text="@string/email_hint"
             android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <EditText
@@ -56,9 +56,9 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:hint="@string/email_hint"
-            android:inputType="text"
-            android:textAppearance="@android:style/TextAppearance.Medium"
-            android:maxLength="24"/>
+            android:inputType="textEmailAddress"
+            android:maxLength="24"
+            android:textAppearance="@android:style/TextAppearance.Medium" />
 
     </LinearLayout>
 
@@ -70,24 +70,24 @@
         android:layout_marginTop="5dp">
 
         <Button
-            android:id="@+id/save_button"
+            android:id="@+id/save_edited_user_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
             android:layout_weight="0.25"
             android:onClick="saveContact"
             android:text="@string/save"
-            android:layout_gravity="center_horizontal"
-            android:textAppearance="@android:style/TextAppearance.Medium"/>
+            android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <Button
-            android:id="@+id/delete_button"
+            android:id="@+id/delete_edited_user_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
             android:layout_weight="0.25"
             android:onClick="deleteContact"
             android:text="@string/delete"
-            android:layout_gravity="center_horizontal"
-            android:textAppearance="@android:style/TextAppearance.Medium"/>
+            android:textAppearance="@android:style/TextAppearance.Medium" />
 
     </LinearLayout>
 </LinearLayout>

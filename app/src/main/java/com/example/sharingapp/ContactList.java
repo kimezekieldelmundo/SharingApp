@@ -15,7 +15,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 /**
- * ItemList class
+ * ContactList class
  */
 public class ContactList {
 
@@ -34,18 +34,16 @@ public class ContactList {
         return contacts;
     }
 
-    public ArrayList<String> getAllUsernames() {
-        ArrayList<String> usernames = new ArrayList<String>();
-        for (Contact i: contacts){
-            usernames.add(i.getUsername());
-        }
-        return usernames;
+    public ArrayList<String> getAllUsernames(){
+        ArrayList<String> username_list = new ArrayList<String>();
+        for (Contact u : contacts){
+            username_list.add(u.getUsername());
+            }
+        return username_list;
     }
 
     public void addContact(Contact contact) {
-        if( isUsernameAvailable(contact.getUsername()) ){
-            contacts.add(contact);
-        }
+        contacts.add(contact);
     }
 
     public void deleteContact(Contact contact) {
@@ -56,13 +54,32 @@ public class ContactList {
         return contacts.get(index);
     }
 
-    public int getSize(){
+    public int getSize() {
         return contacts.size();
     }
-    public int getIndex(Contact item) {
+
+    public Contact getContactByUsername(String username){
+        for (Contact c : contacts){
+            if (c.getUsername().equals(username)){
+                return c;
+            }
+        }
+        return null;
+    }
+
+    public boolean hasContact(Contact contact) {
+        for (Contact c : contacts) {
+            if (contact.getId().equals(c.getId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int getIndex(Contact contact) {
         int pos = 0;
-        for (Contact i : contacts) {
-            if (item.getId().equals(i.getId())) {
+        for (Contact c : contacts) {
+            if (contact.getId().equals(c.getId())) {
                 return pos;
             }
             pos = pos+1;
@@ -70,22 +87,13 @@ public class ContactList {
         return -1;
     }
 
-    public boolean hasContact(Contact contact){
-        for (Contact i: contacts){
-            if(i.getId().equals(contact.getId()) && i.getUsername().equals(contact.getUsername()) && i.getEmail().equals(contact.getEmail())){
-                return true;
+    public boolean isUsernameAvailable(String username){
+        for (Contact c : contacts) {
+            if (c.getUsername().equals(username)) {
+                return false;
             }
         }
-        return false;
-    }
-
-    public Contact getContactByUsername(String username){
-        for (Contact i: contacts){
-            if(i.getUsername().equals(username)){
-                return i;
-            }
-        }
-        return null;
+        return true;
     }
 
     public void loadContacts(Context context) {
@@ -104,7 +112,7 @@ public class ContactList {
         }
     }
 
-    public void saveContacts(Context context) {
+    public boolean saveContacts(Context context) {
         try {
             FileOutputStream fos = context.openFileOutput(FILENAME, 0);
             OutputStreamWriter osw = new OutputStreamWriter(fos);
@@ -114,17 +122,11 @@ public class ContactList {
             fos.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            return false;
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    public boolean isUsernameAvailable(String username){
-        if(getContactByUsername(username) == null){
-            return true;
-        }else{
             return false;
         }
+        return true;
     }
 }
-

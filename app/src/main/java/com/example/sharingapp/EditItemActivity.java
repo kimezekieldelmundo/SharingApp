@@ -4,10 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.provider.MediaStore;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -15,18 +14,19 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 /**
  * Editing a pre-existing item consists of deleting the old item and adding a new item with the old
  * item's id.
+ * Note: invisible EditText is used to setError for status. For whatever reason we cannot .setError to
+ * the status Switch so instead an error is set to an "invisible" EditText.
  */
-public class EditItemActivity extends AppCompatActivity {
+public class EditItemActivity extends AppCompatActivity{
 
     private ItemList item_list = new ItemList();
     private Item item;
     private Context context;
+
+    private ContactList contact_list = new ContactList();
 
     private Bitmap image;
     private int REQUEST_CODE = 1;
@@ -38,76 +38,65 @@ public class EditItemActivity extends AppCompatActivity {
     private EditText length;
     private EditText width;
     private EditText height;
+    private Spinner borrower_spinner;
     private TextView  borrower_tv;
     private Switch status;
-    private Spinner borrower_spinner;
     private EditText invisible;
-    private ContactList contact_list = new ContactList();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_item);
-        context = getApplicationContext();
-//        data loading
-        Intent intent = getIntent(); // Get intent from ItemsFragment
-        int pos = intent.getIntExtra("position", 0);
-        item_list.loadItems(context);
-        item = item_list.getItem(pos);
-        Dimensions dimensions = item.getDimensions();
-        String status_str = item.getStatus();
-        image = item.getImage();
 
-        contact_list.loadContacts(context);
-        Contact borrowerContact = item.getBorrower();
-
-//      form fields
         title = (EditText) findViewById(R.id.title);
         maker = (EditText) findViewById(R.id.maker);
         description = (EditText) findViewById(R.id.description);
         length = (EditText) findViewById(R.id.length);
         width = (EditText) findViewById(R.id.width);
         height = (EditText) findViewById(R.id.height);
+        borrower_spinner = (Spinner) findViewById(R.id.borrower_spinner);
         borrower_tv = (TextView) findViewById(R.id.borrower_tv);
         photo = (ImageView) findViewById(R.id.image_view);
         status = (Switch) findViewById(R.id.available_switch);
+        invisible = (EditText) findViewById(R.id.invisible);
 
-        borrower_spinner = (Spinner) findViewById(R.id.borrower_spinner);
-        ArrayAdapter<String> borrowerSprinnerArrayAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, contact_list.getAllUsernames());
-        borrowerSprinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        borrower_spinner.setAdapter(borrowerSprinnerArrayAdapter);
-        borrower_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                String selected = (String)adapterView.getItemAtPosition(i);
-                Contact contact = contact_list.getContactByUsername(selected);
-                item.setBorrower(contact);
-            }
+        invisible.setVisibility(View.GONE);
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
+        context = getApplicationContext();
+        item_list.loadItems(context);
+        contact_list.loadContacts(context);
 
-            }
-        });
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_dropdown_item, contact_list.getAllUsernames());
+        borrower_spinner.setAdapter(adapter);
 
-//      set form fields value
+        Intent intent = getIntent();   // Get intent from ItemsFragment
+        int pos = intent.getIntExtra("position", 0);
+
+        item = item_list.getItem(pos);
+
+        Contact contact = item.getBorrower();
+        if (contact != null){
+            int contact_pos = contact_list.getIndex(contact);
+            borrower_spinner.setSelection(contact_pos);
+        }
+
         title.setText(item.getTitle());
         maker.setText(item.getMaker());
         description.setText(item.getDescription());
-        length.setText(dimensions.getLength());
-        width.setText(dimensions.getWidth());
-        height.setText(dimensions.getHeight());
+        length.setText(item.getLength());
+        width.setText(item.getWidth());
+        height.setText(item.getHeight());
 
+        String status_str = item.getStatus();
         if (status_str.equals("Borrowed")) {
             status.setChecked(false);
-            if (borrowerContact != null){
-                borrower_spinner.setSelection(borrowerSprinnerArrayAdapter.getPosition(borrowerContact.getUsername()));
-            }
         } else {
             borrower_tv.setVisibility(View.GONE);
             borrower_spinner.setVisibility(View.GONE);
         }
 
+        image = item.getImage();
         if (image != null) {
             photo.setImageBitmap(image);
         } else {
@@ -137,8 +126,15 @@ public class EditItemActivity extends AppCompatActivity {
     }
 
     public void deleteItem(View view) {
-        item_list.deleteItem(item);
-        item_list.saveItems(context);
+
+        // Delete item
+        DeleteItemCommand delete_item_command = new DeleteItemCommand(item_list, item, context);
+        delete_item_command.execute();
+
+        boolean success = delete_item_command.isExecuted();
+        if (!success){
+            return;
+        }
 
         // End EditItemActivity
         Intent intent = new Intent(this, MainActivity.class);
@@ -153,9 +149,12 @@ public class EditItemActivity extends AppCompatActivity {
         String length_str = length.getText().toString();
         String width_str = width.getText().toString();
         String height_str = height.getText().toString();
-//        String borrower_str = borrower.getText().toString();
-        Contact borrowerObj = contact_list.getContactByUsername((String) borrower_spinner.getSelectedItem());
-        Dimensions dimensions = new Dimensions(length_str, width_str, height_str);
+
+        Contact contact = null;
+        if (!status.isChecked()) {
+            String borrower_str = borrower_spinner.getSelectedItem().toString();
+            contact = contact_list.getContactByUsername(borrower_str);
+        }
 
         if (title_str.equals("")) {
             title.setError("Empty field!");
@@ -187,25 +186,24 @@ public class EditItemActivity extends AppCompatActivity {
             return;
         }
 
-//        if (borrowerObj.equals(null) && !status.isChecked()) {
-//            borrower.setError("Empty field!");
-//            return;
-//        }
-
-        // Reuse the item id
-        String id = item.getId();
-        item_list.deleteItem(item);
-
-        Item updated_item = new Item(title_str, maker_str, description_str, dimensions, image, id);
+        String id = item.getId(); // Reuse the item id
+        Item updated_item = new Item(title_str, maker_str, description_str, image, id );
+        updated_item.setDimensions(length_str, width_str, height_str);
 
         boolean checked = status.isChecked();
         if (!checked) {
             updated_item.setStatus("Borrowed");
-            updated_item.setBorrower(borrowerObj);
+            updated_item.setBorrower(contact);
         }
-        item_list.addItem(updated_item);
 
-        item_list.saveItems(context);
+        // Edit item
+        EditItemCommand edit_item_command = new EditItemCommand(item_list, item, updated_item, context);
+        edit_item_command.execute();
+
+        boolean success = edit_item_command.isExecuted();
+        if (!success){
+            return;
+        }
 
         // End EditItemActivity
         Intent intent = new Intent(this, MainActivity.class);
@@ -218,16 +216,27 @@ public class EditItemActivity extends AppCompatActivity {
      */
     public void toggleSwitch(View view){
         if (status.isChecked()) {
-            // Means was previously borrowed
+            // Means was previously borrowed, switch was toggled to available
             borrower_spinner.setVisibility(View.GONE);
             borrower_tv.setVisibility(View.GONE);
             item.setBorrower(null);
             item.setStatus("Available");
 
         } else {
-            // Means was previously available
-            borrower_spinner.setVisibility(View.VISIBLE);
-            borrower_tv.setVisibility(View.VISIBLE);
+            // Means not borrowed
+            if (contact_list.getSize()==0){
+                // No contacts, need to add contacts to be able to add a borrower.
+                invisible.setEnabled(false);
+                invisible.setVisibility(View.VISIBLE);
+                invisible.requestFocus();
+                invisible.setError("No contacts available! Must add borrower to contacts.");
+                status.setChecked(true); // Set switch to available
+
+            } else {
+                // Means was previously available
+                borrower_spinner.setVisibility(View.VISIBLE);
+                borrower_tv.setVisibility(View.VISIBLE);
+            }
         }
     }
 }

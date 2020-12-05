@@ -3,53 +3,88 @@ package com.example.sharingapp;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.PersistableBundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
-public class ContactsActivity  extends AppCompatActivity {
+import java.util.ArrayList;
+
+/**
+ * Displays a list of all contacts
+ */
+public class ContactsActivity extends AppCompatActivity {
+
     private ContactList contact_list = new ContactList();
-    private ContactList active_borrowers_list;
-    private ItemList item_list;
-    private ListView my_contacts = null;
+    private ListView my_contacts;
     private ArrayAdapter<Contact> adapter;
     private Context context;
+    private ItemList item_list = new ItemList();
+    private ContactList active_borrowers_list = new ContactList();
 
-    @Override
-    protected void onCreate( Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts);
-        context = getBaseContext();
+
+        context = getApplicationContext();
         contact_list.loadContacts(context);
-        my_contacts = (ListView)  findViewById(R.id.contacts_list_view);
-        adapter = new ContactAdapter(this, contact_list.getContacts());
+        item_list.loadItems(context);
+
+        my_contacts = (ListView) findViewById(R.id.my_contacts);
+        adapter = new ContactAdapter(ContactsActivity.this, contact_list.getContacts());
         my_contacts.setAdapter(adapter);
-        my_contacts.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+        adapter.notifyDataSetChanged();
+
+        // When contact is long clicked, this starts EditContactActivity
+        my_contacts.setOnItemLongClickListener(new android.widget.AdapterView.OnItemLongClickListener() {
+
             @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Contact selectedContact = (Contact)  adapterView.getItemAtPosition(i);
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int pos, long id) {
+
+                Contact contact = adapter.getItem(pos);
+
+                ArrayList<Contact> active_borrowers = item_list.getActiveBorrowers();
+                active_borrowers_list.setContacts(active_borrowers);
+
+                // Prevent contact from editing an "active" borrower.
+                if (active_borrowers_list != null) {
+                    if (active_borrowers_list.hasContact(contact)) {
+                        CharSequence text = "Cannot edit or delete active borrower!";
+                        int duration = Toast.LENGTH_SHORT;
+                        Toast.makeText(context, text, duration).show();
+                        return true;
+                    }
+                }
+
+                contact_list.loadContacts(context); // Must load contacts again here
+                int meta_pos = contact_list.getIndex(contact);
+
                 Intent intent = new Intent(context, EditContactActivity.class);
-                intent.putExtra("contact", contact_list.getIndex(selectedContact));
-                intent.addFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
+                intent.putExtra("position", meta_pos);
                 startActivity(intent);
+
                 return true;
             }
         });
-
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+
+        context = getApplicationContext();
+        contact_list.loadContacts(context);
+
+        my_contacts = (ListView) findViewById(R.id.my_contacts);
+        adapter = new ContactAdapter(ContactsActivity.this, contact_list.getContacts());
+        my_contacts.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
     }
 
     public void addContactActivity(View view){
         Intent intent = new Intent(this, AddContactActivity.class);
-        intent.addFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
         startActivity(intent);
     }
 }

@@ -11,7 +11,7 @@
         android:layout_gravity="center_horizontal">
 
         <ImageView
-            android:id="@+id/image_view"
+            android:id="@+id/contacts_image_view"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:scaleType="centerCrop"
@@ -33,13 +33,13 @@
                 android:layout_marginTop="10dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:hint="@string/username_hint"/>
+                android:hint="@string/title_hint"/>
 
             <TextView
                 android:id="@+id/email_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:hint="@string/email_hint"/>
+                android:hint="@string/status_hint"/>
 
         </LinearLayout>
 
